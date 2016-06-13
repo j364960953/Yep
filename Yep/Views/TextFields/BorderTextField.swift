@@ -1,15 +1,15 @@
 //
 //  BorderTextField.swift
-//  
+//  Yep
 //
 //  Created by NIX on 15/6/15.
-//
+//  Copyright (c) 2015年 Catch Inc. All rights reserved.
 //
 
 import UIKit
 
 @IBDesignable
-class BorderTextField: UITextField {
+final class BorderTextField: UITextField {
 
     @IBInspectable var lineColor: UIColor = UIColor.yepBorderColor()
     @IBInspectable var lineWidth: CGFloat = 1 / UIScreen.mainScreen().scale

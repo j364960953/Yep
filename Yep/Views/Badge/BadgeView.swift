@@ -9,7 +9,7 @@
 import UIKit
 
 //@IBDesignable
-class BadgeView: UIView {
+final class BadgeView: UIView {
 
     enum Badge: String {
         case Palette = "palette"
@@ -102,14 +102,14 @@ class BadgeView: UIView {
     lazy var badgeImageView: UIImageView = {
         let imageView = UIImageView()
         return imageView
-        }()
+    }()
 
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
 
         makeUI()
 
-        let tap = UITapGestureRecognizer(target: self, action: "tap")
+        let tap = UITapGestureRecognizer(target: self, action: #selector(BadgeView.tap))
         addGestureRecognizer(tap)
     }
 

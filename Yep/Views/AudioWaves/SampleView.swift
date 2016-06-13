@@ -7,9 +7,10 @@
 //
 
 import UIKit
+import YepConfig
 
 @IBDesignable
-class SampleView: UIView {
+final class SampleView: UIView {
 
     var samples: [CGFloat]?
 
@@ -34,14 +35,14 @@ class SampleView: UIView {
         layer.lineWidth = self.sampleWidth
         layer.strokeColor = self.sampleColor.colorWithAlphaComponent(0.5).CGColor
         return layer
-        }()
+    }()
 
     lazy var unplayedWaveLayer: CAShapeLayer = {
         let layer = CAShapeLayer()
         layer.lineWidth = self.sampleWidth
         layer.strokeColor = self.sampleColor.CGColor
         return layer
-        }()
+    }()
 
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
@@ -98,5 +99,5 @@ class SampleView: UIView {
             progress = 0
         }
     }
-
 }
+

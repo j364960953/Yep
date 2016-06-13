@@ -7,16 +7,19 @@
 //
 
 import UIKit
-import MobileCoreServices
+import MobileCoreServices.UTType
 import RealmSwift
+import YepKit
+import YepConfig
+import YepNetworking
 import Proposer
 import Navi
 
 let ScrollViewTag = 100
 
-class SkillHomeViewController: BaseViewController {
+final class SkillHomeViewController: BaseViewController {
 
-    var skill: SkillCell.Skill? {
+    var skill: SkillCellSkill? {
         willSet {
             title = newValue?.localName
             skillCoverURLString = newValue?.coverURLString
@@ -139,9 +142,9 @@ class SkillHomeViewController: BaseViewController {
 
         headerViewHeightLayoutConstraint.constant = YepConfig.skillHomeHeaderViewHeight
         
-        headerView.masterButton.addTarget(self, action: "changeToMaster:", forControlEvents: UIControlEvents.TouchUpInside)
+        headerView.masterButton.addTarget(self, action: #selector(SkillHomeViewController.changeToMaster(_:)), forControlEvents: UIControlEvents.TouchUpInside)
         
-        headerView.learningButton.addTarget(self, action: "changeToLearning:", forControlEvents: UIControlEvents.TouchUpInside)
+        headerView.learningButton.addTarget(self, action: #selector(SkillHomeViewController.changeToLearning(_:)), forControlEvents: UIControlEvents.TouchUpInside)
 
         headerView.changeCoverAction = { [weak self] in
 
@@ -150,11 +153,15 @@ class SkillHomeViewController: BaseViewController {
             let choosePhotoAction: UIAlertAction = UIAlertAction(title: NSLocalizedString("Choose Photo", comment: ""), style: .Default) { action -> Void in
 
                 let openCameraRoll: ProposerAction = { [weak self] in
-                    if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum) {
-                        if let strongSelf = self {
-                            strongSelf.imagePicker.sourceType = .PhotoLibrary
-                            strongSelf.presentViewController(strongSelf.imagePicker, animated: true, completion: nil)
-                        }
+
+                    guard UIImagePickerController.isSourceTypeAvailable(.PhotoLibrary) else {
+                        self?.alertCanNotAccessCameraRoll()
+                        return
+                    }
+
+                    if let strongSelf = self {
+                        strongSelf.imagePicker.sourceType = .PhotoLibrary
+                        strongSelf.presentViewController(strongSelf.imagePicker, animated: true, completion: nil)
                     }
                 }
 
@@ -167,11 +174,15 @@ class SkillHomeViewController: BaseViewController {
             let takePhotoAction: UIAlertAction = UIAlertAction(title: NSLocalizedString("Take Photo", comment: ""), style: .Default) { action -> Void in
 
                 let openCamera: ProposerAction = { [weak self] in
-                    if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera){
-                        if let strongSelf = self {
-                            strongSelf.imagePicker.sourceType = .Camera
-                            strongSelf.presentViewController(strongSelf.imagePicker, animated: true, completion: nil)
-                        }
+
+                    guard UIImagePickerController.isSourceTypeAvailable(.Camera) else {
+                        self?.alertCanNotOpenCamera()
+                        return
+                    }
+
+                    if let strongSelf = self {
+                        strongSelf.imagePicker.sourceType = .Camera
+                        strongSelf.presentViewController(strongSelf.imagePicker, animated: true, completion: nil)
                     }
                 }
 
@@ -229,7 +240,7 @@ class SkillHomeViewController: BaseViewController {
 
                     if me.masterSkills.filter(predicate).count == 0
                         && me.learningSkills.filter(predicate).count == 0 {
-                            let addSkillToMeButton = UIBarButtonItem(title: NSLocalizedString("Add to Me", comment: ""), style: .Plain, target: self, action: "addSkillToMe:")
+                            let addSkillToMeButton = UIBarButtonItem(title: NSLocalizedString("Add to Me", comment: ""), style: .Plain, target: self, action: #selector(SkillHomeViewController.addSkillToMe(_:)))
                             navigationItem.rightBarButtonItem = addSkillToMeButton
                     }
             }
@@ -272,7 +283,7 @@ class SkillHomeViewController: BaseViewController {
             let doAddSkillToSkillSet: SkillSet -> Void = { skillSet in
 
                 addSkillWithSkillID(skillID, toSkillSet: skillSet, failureHandler: { reason, errorMessage in
-                    defaultFailureHandler(reason, errorMessage: errorMessage)
+                    defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                 }, completion: { [weak self] _ in
 
@@ -327,14 +338,14 @@ class SkillHomeViewController: BaseViewController {
         }
 
         if isLoadMore {
-            masterPage++
+            masterPage += 1
 
         } else {
             masterPage = 1
         }
 
         discoverUsersWithSkill(skillID, ofSkillSet: .Master, inPage: masterPage, withPerPage: 30, failureHandler: { [weak self] (reason, errorMessage) in
-            defaultFailureHandler(reason, errorMessage: errorMessage)
+            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
             dispatch_async(dispatch_get_main_queue()) {
                 self?.activityIndicator.stopAnimating()
@@ -372,14 +383,14 @@ class SkillHomeViewController: BaseViewController {
         }
 
         if isLoadMore {
-            learningPage++
+            learningPage += 1
 
         } else {
             learningPage = 1
         }
 
         discoverUsersWithSkill(skillID, ofSkillSet: .Learning, inPage: learningPage, withPerPage: 30, failureHandler: { [weak self] (reason, errorMessage) in
-            defaultFailureHandler(reason, errorMessage: errorMessage)
+            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
             dispatch_async(dispatch_get_main_queue()) {
                 self?.activityIndicator.stopAnimating()
@@ -478,7 +489,7 @@ extension SkillHomeViewController: UIImagePickerControllerDelegate, UINavigation
 
             switch mediaType {
 
-            case kUTTypeImage as! String:
+            case String(kUTTypeImage):
 
                 if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
 
@@ -514,7 +525,7 @@ extension SkillHomeViewController: UIImagePickerControllerDelegate, UINavigation
 
                                 YepHUD.hideActivityIndicator()
 
-                                defaultFailureHandler(reason, errorMessage: errorMessage)
+                                defaultFailureHandler(reason: reason, errorMessage: errorMessage)
                                 YepAlert.alertSorry(message: NSLocalizedString("Upload skill cover failed!", comment: ""), inViewController: self)
 
                             }, completion: { s3UploadParams in
@@ -525,7 +536,7 @@ extension SkillHomeViewController: UIImagePickerControllerDelegate, UINavigation
 
                                     YepHUD.hideActivityIndicator()
 
-                                    defaultFailureHandler(reason, errorMessage: errorMessage)
+                                    defaultFailureHandler(reason: reason, errorMessage: errorMessage)
                                     YepAlert.alertSorry(message: NSLocalizedString("Update skill cover failed!", comment: ""), inViewController: self)
                                     
                                 }, completion: { [weak self] success in
@@ -598,11 +609,12 @@ extension SkillHomeViewController: UITableViewDelegate, UITableViewDataSource {
             
             let discoveredUser = discoveredUsersWithSkillSet(SkillSet(rawValue: tableView.tag))[indexPath.row]
 
-            cell.configureWithDiscoveredUser(discoveredUser, tableView: tableView, indexPath: indexPath)
+            cell.configureWithDiscoveredUser(discoveredUser)
 
             return cell
 
         case Section.LoadMore.rawValue:
+
             let cell = tableView.dequeueReusableCellWithIdentifier(loadMoreTableViewCellID) as! LoadMoreTableViewCell
             return cell
 

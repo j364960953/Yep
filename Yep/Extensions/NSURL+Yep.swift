@@ -7,7 +7,7 @@
 //
 
 import Foundation
-
+import YepKit
 private let yepHost = "soyep.com"
 
 extension NSURL {
@@ -80,21 +80,40 @@ extension NSURL {
 
         return false
     }
+}
 
-    // iTunes
+extension NSURL {
 
-    var yep_iTunesArtworkID: String? {
+    var yep_isNetworkURL: Bool {
 
-        if let artworkID = queryItemForKey("i")?.value {
-            return artworkID
+        switch scheme {
+        case "http", "https":
+            return true
+        default:
+            return false
+        }
+    }
+
+    var yep_validSchemeNetworkURL: NSURL? {
+
+        if scheme.isEmpty {
+
+            guard let URLComponents = NSURLComponents(URL: self, resolvingAgainstBaseURL: false) else {
+                return nil
+            }
+
+            URLComponents.scheme = "http"
+
+            return URLComponents.URL
 
         } else {
-            if let artworkID = lastPathComponent?.stringByReplacingOccurrencesOfString("id", withString: "") {
-                return artworkID
+            if yep_isNetworkURL {
+                return self
+
+            } else {
+                return nil
             }
         }
-
-        return nil
     }
 }
 

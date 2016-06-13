@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
 import RealmSwift
 import Navi
 import Kingfisher
@@ -15,14 +17,45 @@ import Proposer
 let YepNotificationCommentAction = "YepNotificationCommentAction"
 let YepNotificationOKAction = "YepNotificationOKAction"
 
-class ConversationsViewController: SegueViewController {
+final class ConversationsViewController: BaseViewController {
 
     private lazy var activityIndicatorTitleView = ActivityIndicatorTitleView(frame: CGRect(x: 0, y: 0, width: 120, height: 30))
 
-    @IBOutlet weak var conversationsTableView: UITableView!
+    private lazy var searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.searchBarStyle = .Minimal
+        searchBar.placeholder = NSLocalizedString("Search", comment: "")
+        searchBar.setSearchFieldBackgroundImage(UIImage(named: "searchbar_textfield_background"), forState: .Normal)
+        searchBar.delegate = self
+        return searchBar
+    }()
+
+    var originalNavigationControllerDelegate: UINavigationControllerDelegate?
+    lazy var searchTransition: SearchTransition = {
+        return SearchTransition()
+    }()
 
     private let feedConversationDockCellID = "FeedConversationDockCell"
     private let cellIdentifier = "ConversationCell"
+
+    @IBOutlet weak var conversationsTableView: UITableView! {
+        didSet {
+            searchBar.sizeToFit()
+            conversationsTableView.tableHeaderView = searchBar
+            //conversationsTableView.contentOffset.y = CGRectGetHeight(searchBar.frame)
+            //println("searchBar.frame: \(searchBar.frame)")
+
+            conversationsTableView.separatorColor = UIColor.yepCellSeparatorColor()
+            conversationsTableView.separatorInset = YepConfig.ContactsCell.separatorInset
+
+            conversationsTableView.registerNib(UINib(nibName: feedConversationDockCellID, bundle: nil), forCellReuseIdentifier: feedConversationDockCellID)
+            conversationsTableView.registerNib(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
+
+            conversationsTableView.rowHeight = 80
+
+            conversationsTableView.tableFooterView = UIView()
+        }
+    }
 
     private var realm: Realm!
 
@@ -40,6 +73,20 @@ class ConversationsViewController: SegueViewController {
                     navigationController?.tabBarItem.selectedImage = UIImage(named: "icon_chat_active")
                 }
             }
+        }
+    }
+
+    private var unreadMessagesCount: Int = 0 {
+        willSet {
+            dispatch_async(dispatch_get_main_queue()) { [weak self] in
+                if newValue > 0 {
+                    self?.navigationItem.title = "Yep(\(newValue))"
+                } else {
+                    self?.navigationItem.title = "Yep"
+                }
+            }
+
+            //println("unreadMessagesCount: \(unreadMessagesCount)")
         }
     }
 
@@ -61,9 +108,8 @@ class ConversationsViewController: SegueViewController {
     #endif
 
     private lazy var conversations: Results<Conversation> = {
-        let predicate = NSPredicate(format: "type = %d", ConversationType.OneToOne.rawValue)
-        return self.realm.objects(Conversation).filter(predicate).sorted("updatedUnixTime", ascending: false)
-        }()
+        return oneToOneConversationsInRealm(self.realm)
+    }()
 
     private struct Listener {
         static let Nickname = "ConversationsViewController.Nickname"
@@ -82,6 +128,8 @@ class ConversationsViewController: SegueViewController {
 
         conversationsTableView?.delegate = nil
 
+        realmNotificationToken?.stop()
+
         println("deinit Conversations")
     }
 
@@ -90,16 +138,20 @@ class ConversationsViewController: SegueViewController {
 
         realm = try! Realm()
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "reloadConversationsTableView", name: YepConfig.Notification.newMessages, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadConversationsTableView), name: YepConfig.Notification.newMessages, object: nil)
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "reloadConversationsTableView", name: YepConfig.Notification.deletedMessages, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadConversationsTableView), name: YepConfig.Notification.deletedMessages, object: nil)
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "reloadConversationsTableView", name: YepConfig.Notification.changedConversation, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadConversationsTableView), name: YepConfig.Notification.changedConversation, object: nil)
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "reloadConversationsTableView", name: YepConfig.Notification.markAsReaded, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadFeedConversationsDock), name: YepConfig.Notification.changedFeedConversation, object: nil)
+
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadConversationsTableView), name: YepConfig.Notification.markAsReaded, object: nil)
+
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadConversationsTableView), name: YepConfig.Notification.updatedUser, object: nil)
         
         // 确保自己发送消息的时候，会话列表也会刷新，避免时间戳不一致
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "reloadConversationsTableView", name: MessageNotification.MessageStateChanged, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ConversationsViewController.reloadConversationsTableView), name: YepConfig.Message.Notification.MessageStateChanged, object: nil)
 
         YepUserDefaults.nickname.bindListener(Listener.Nickname) { [weak self] _ in
             dispatch_async(dispatch_get_main_queue()) {
@@ -123,20 +175,14 @@ class ConversationsViewController: SegueViewController {
 
         view.backgroundColor = UIColor.whiteColor()
 
-        conversationsTableView.separatorColor = UIColor.yepCellSeparatorColor()
-        conversationsTableView.separatorInset = YepConfig.ContactsCell.separatorInset
-
-        conversationsTableView.registerNib(UINib(nibName: feedConversationDockCellID, bundle: nil), forCellReuseIdentifier: feedConversationDockCellID)
-        conversationsTableView.registerNib(UINib(nibName: cellIdentifier, bundle: nil), forCellReuseIdentifier: cellIdentifier)
-        conversationsTableView.rowHeight = 80
-        conversationsTableView.tableFooterView = UIView()
-
         noConversation = conversations.isEmpty
 
         realmNotificationToken = realm.addNotificationBlock { [weak self] notification, realm in
             if let strongSelf = self {
 
-                let haveOneToOneUnreadMessages = countOfUnreadMessagesInRealm(realm, withConversationType: .OneToOne) > 0
+                strongSelf.unreadMessagesCount = countOfUnreadMessagesInRealm(realm, withConversationType: .OneToOne)
+
+                let haveOneToOneUnreadMessages = strongSelf.unreadMessagesCount > 0
 
                 strongSelf.haveUnreadMessages = haveOneToOneUnreadMessages || (countOfUnreadMessagesInRealm(realm, withConversationType: .Group) > 0)
 
@@ -148,21 +194,30 @@ class ConversationsViewController: SegueViewController {
             YepLocationService.turnOn()
         }
 
+        cacheInAdvance()
+
         #if DEBUG
-//            view.addSubview(conversationsFPSLabel)
+            //view.addSubview(conversationsFPSLabel)
         #endif
     }
 
     private func cacheInAdvance() {
 
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
 
-            // 聊天界面的小头像
+            // 最近一天活跃的好友
 
-            for user in normalUsers() {
+            for user in normalFriends().filter("lastSignInUnixTime > %@", NSDate().timeIntervalSince1970 - 60*60*24) {
 
-                let userAvatar = UserAvatar(userID: user.userID, avatarStyle: nanoAvatarStyle)
-                AvatarPod.wakeAvatar(userAvatar, completion: { _, _, _ in })
+                do {
+                    let userAvatar = UserAvatar(userID: user.userID, avatarURLString: user.avatarURLString, avatarStyle: miniAvatarStyle)
+                    AvatarPod.wakeAvatar(userAvatar, completion: { _, _, _ in })
+                }
+
+                do {
+                    let userAvatar = UserAvatar(userID: user.userID, avatarURLString: user.avatarURLString, avatarStyle: nanoAvatarStyle)
+                    AvatarPod.wakeAvatar(userAvatar, completion: { _, _, _ in })
+                }
             }
 
             /*
@@ -238,82 +293,69 @@ class ConversationsViewController: SegueViewController {
         }
     }
 
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-    }
+    var isFirstAppear = true
 
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        
-        delay(0.5) { [weak self] in
-            self?.askForNotification()
+
+        if isFirstAppear {
+            delay(0.5) { [weak self] in
+                self?.askForNotification()
+            }
         }
 
-        // 预先生成小头像
-        cacheInAdvance()
+        isFirstAppear = false
 
-        // test open graph
-        /*
-        [
-            //"https://itunes.apple.com/cn/album/hello-single/id1051365605?i=1051366040&l=en",
-            //"https://itun.es/cn/5_268?i=1022063849",
-            //"www.douban.com",
-            //"http://swiftcn.io/topics/64?f=w",
-            //"https://github.com/",
-            //"http://www.douban.com/note/431101390/",
-            //"https://itunes.apple.com/us/movie/headhunters/id550338059", // 电影
-            //"https://itunes.apple.com/cn/album/19-standard-edition/id270409624?l=en", // 专辑
-            //"https://itunes.apple.com/cn/album/hello-single/id1051365605?i=1051366040&l=en", // 单曲
-            "https://itunes.apple.com/us/book/swift-programming-language/id881256329", // 书
-            //"https://itunes.apple.com/cn/app/evernote/id281796108?l=en&mt=8", // APP
-        ].forEach({
-            openGraphWithURLString($0, failureHandler: nil, completion: { openGraph in
-                println("openGraph: \(openGraph)")
-            })
-        })
-        */
+        recoverOriginalNavigationDelegate()
     }
     
     private func askForNotification() {
 
-        if #available(iOS 9.0, *) {
-            
-            let replyAction = UIMutableUserNotificationAction()
-            replyAction.title = NSLocalizedString("Reply", comment: "")
-            replyAction.identifier = YepNotificationCommentAction
-            replyAction.activationMode = .Background
-            replyAction.behavior = .TextInput
-            replyAction.authenticationRequired = false
-            
-            let replyOKAction = UIMutableUserNotificationAction()
-            replyOKAction.title = "OK"
-            replyOKAction.identifier = YepNotificationOKAction
-            replyOKAction.activationMode = .Background
-            replyOKAction.behavior = .Default
-            replyOKAction.authenticationRequired = false
-            
-            let category = UIMutableUserNotificationCategory()
-            category.identifier = "YepMessageNotification"
-            category.setActions([replyAction, replyOKAction], forContext: UIUserNotificationActionContext.Minimal)
-            
-            APService.registerForRemoteNotificationTypes(
-                UIUserNotificationType.Badge.rawValue |
+        let replyAction = UIMutableUserNotificationAction()
+        replyAction.title = NSLocalizedString("Reply", comment: "")
+        replyAction.identifier = YepNotificationCommentAction
+        replyAction.activationMode = .Background
+        replyAction.behavior = .TextInput
+        replyAction.authenticationRequired = false
+
+        let replyOKAction = UIMutableUserNotificationAction()
+        replyOKAction.title = "OK"
+        replyOKAction.identifier = YepNotificationOKAction
+        replyOKAction.activationMode = .Background
+        replyOKAction.behavior = .Default
+        replyOKAction.authenticationRequired = false
+
+        let category = UIMutableUserNotificationCategory()
+        category.identifier = "YepMessageNotification"
+        category.setActions([replyAction, replyOKAction], forContext: UIUserNotificationActionContext.Minimal)
+
+        // 这里才开始向用户提示推送
+        let types = UIUserNotificationType.Badge.rawValue |
                     UIUserNotificationType.Sound.rawValue |
-                    UIUserNotificationType.Alert.rawValue, categories: [category])
-            
-        } else {
-            // 这里才开始向用户提示推送
-            APService.registerForRemoteNotificationTypes(
-                UIUserNotificationType.Badge.rawValue |
-                    UIUserNotificationType.Sound.rawValue |
-                    UIUserNotificationType.Alert.rawValue, categories: nil)
-        }
+                    UIUserNotificationType.Alert.rawValue
+
+        JPUSHService.registerForRemoteNotificationTypes(types, categories: [category])
     }
 
     // MARK: Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if segue.identifier == "showConversation" {
+
+        guard let identifier = segue.identifier else { return }
+
+        switch identifier {
+
+        case "showSearchConversations":
+
+            let vc = segue.destinationViewController as! SearchConversationsViewController
+            vc.originalNavigationControllerDelegate = navigationController?.delegate
+
+            vc.hidesBottomBarWhenPushed = true
+
+            prepareSearchTransition()
+
+        case "showConversation":
+
             let vc = segue.destinationViewController as! ConversationViewController
 
             let conversation = sender as! Conversation
@@ -334,15 +376,54 @@ class ConversationsViewController: SegueViewController {
                     }
                 }
             }
+
+            recoverOriginalNavigationDelegate()
+
+        case "showProfile":
+
+            let vc = segue.destinationViewController as! ProfileViewController
+
+            let user = sender as! User
+            vc.profileUser = ProfileUser.UserType(user)
+
+            vc.setBackButtonWithTitle()
+
+            recoverOriginalNavigationDelegate()
+            
+        default:
+            break
         }
     }
 
     // MARK: Actions
 
     @objc private func reloadConversationsTableView() {
-        dispatch_async(dispatch_get_main_queue()) {
-            self.conversationsTableView.reloadData()
+        dispatch_async(dispatch_get_main_queue()) { [weak self] in
+            self?.conversationsTableView.reloadData()
         }
+    }
+
+    @objc private func reloadFeedConversationsDock() {
+        dispatch_async(dispatch_get_main_queue()) { [weak self] in
+            let sectionIndex = Section.FeedConversation.rawValue
+            guard self?.conversationsTableView.numberOfSections ?? 0 > sectionIndex else {
+                return
+            }
+
+            self?.conversationsTableView.reloadSections(NSIndexSet(index: sectionIndex), withRowAnimation: .None)
+        }
+    }
+}
+
+// MARK: - UISearchBarDelegate
+
+extension ConversationsViewController: UISearchBarDelegate {
+
+    func searchBarShouldBeginEditing(searchBar: UISearchBar) -> Bool {
+
+        performSegueWithIdentifier("showSearchConversations", sender: nil)
+
+        return false
     }
 }
 
@@ -377,29 +458,62 @@ extension ConversationsViewController: UITableViewDataSource, UITableViewDelegat
 
         case Section.FeedConversation.rawValue:
             let cell = tableView.dequeueReusableCellWithIdentifier(feedConversationDockCellID) as! FeedConversationDockCell
+            return cell
+
+        case Section.Conversation.rawValue:
+            let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! ConversationCell
+            return cell
+            
+        default:
+            return UITableViewCell()
+        }
+    }
+
+    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+
+        switch indexPath.section {
+
+        case Section.FeedConversation.rawValue:
+
+            guard let cell = cell as? FeedConversationDockCell else {
+                break
+            }
 
             cell.haveGroupUnreadMessages = countOfUnreadMessagesInRealm(realm, withConversationType: ConversationType.Group) > 0
 
             // 先找最新且未读的消息
-            let latestUnreadMessage = latestUnreadValidMessageInRealm(realm, withConversationType: ConversationType.Group)
+            let latestUnreadMessage = latestUnreadValidMessageInRealm(realm, withConversationType: .Group)
             // 找不到就找最新的消息
-            if let latestMessage = (latestUnreadMessage ?? latestValidMessageInRealm(realm, withConversationType: ConversationType.Group)) {
+            if let latestMessage = (latestUnreadMessage ?? latestValidMessageInRealm(realm, withConversationType: .Group)) {
 
                 if let mediaType = MessageMediaType(rawValue: latestMessage.mediaType), placeholder = mediaType.placeholder {
                     cell.chatLabel.text = placeholder
 
                 } else {
-                    cell.chatLabel.text = latestMessage.nicknameWithTextContent
+                    if mentionedMeInFeedConversationsInRealm(realm) {
+                        let mentionedYouString = NSLocalizedString("[Mentioned you]", comment: "")
+                        let string = mentionedYouString + " " + latestMessage.nicknameWithTextContent
+
+                        let attributedString = NSMutableAttributedString(string: string)
+                        let mentionedYouRange = NSMakeRange(0, (mentionedYouString as NSString).length)
+                        attributedString.addAttribute(NSForegroundColorAttributeName, value: UIColor.redColor(), range: mentionedYouRange)
+
+                        cell.chatLabel.attributedText = attributedString
+
+                    } else {
+                        cell.chatLabel.text = latestMessage.nicknameWithTextContent
+                    }
                 }
 
             } else {
                 cell.chatLabel.text = NSLocalizedString("No messages yet.", comment: "")
             }
 
-            return cell
-
         case Section.Conversation.rawValue:
-            let cell = tableView.dequeueReusableCellWithIdentifier(cellIdentifier) as! ConversationCell
+
+            guard let cell = cell as? ConversationCell else {
+                break
+            }
 
             if let conversation = conversations[safe: indexPath.row] {
 
@@ -408,10 +522,28 @@ extension ConversationsViewController: UITableViewDataSource, UITableViewDelegat
                 cell.configureWithConversation(conversation, avatarRadius: radius, tableView: tableView, indexPath: indexPath)
             }
             
-            return cell
-            
         default:
-            return UITableViewCell()
+            break
+        }
+    }
+
+    func tableView(tableView: UITableView, didEndDisplayingCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+
+        switch indexPath.section {
+
+        case Section.FeedConversation.rawValue:
+            break
+
+        case Section.Conversation.rawValue:
+
+            guard let cell = cell as? ConversationCell else {
+                return
+            }
+
+            cell.avatarImageView.image = nil
+
+        default:
+            break
         }
     }
 
@@ -455,25 +587,31 @@ extension ConversationsViewController: UITableViewDataSource, UITableViewDelegat
                 tableView.setEditing(false, animated: true)
                 return
             }
-            
+
             tryDeleteOrClearHistoryOfConversation(conversation, inViewController: self, whenAfterClearedHistory: {
 
-                tableView.setEditing(false, animated: true)
+                dispatch_async(dispatch_get_main_queue()) {
+                    tableView.setEditing(false, animated: true)
 
-                // update cell
+                    // update cell
 
-                if let cell = tableView.cellForRowAtIndexPath(indexPath) as? ConversationCell {
-                    if let conversation = self.conversations[safe: indexPath.row] {
-                        let radius = min(CGRectGetWidth(cell.avatarImageView.bounds), CGRectGetHeight(cell.avatarImageView.bounds)) * 0.5
-                        cell.configureWithConversation(conversation, avatarRadius: radius, tableView: tableView, indexPath: indexPath)
+                    if let cell = tableView.cellForRowAtIndexPath(indexPath) as? ConversationCell {
+                        if let conversation = self.conversations[safe: indexPath.row] {
+                            let radius = min(CGRectGetWidth(cell.avatarImageView.bounds), CGRectGetHeight(cell.avatarImageView.bounds)) * 0.5
+                            cell.configureWithConversation(conversation, avatarRadius: radius, tableView: tableView, indexPath: indexPath)
+                        }
                     }
                 }
 
             }, afterDeleted: {
-                tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                dispatch_async(dispatch_get_main_queue()) {
+                    tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                }
 
             }, orCanceled: {
-                tableView.setEditing(false, animated: true)
+                dispatch_async(dispatch_get_main_queue()) {
+                    tableView.setEditing(false, animated: true)
+                }
             })
         }
     }

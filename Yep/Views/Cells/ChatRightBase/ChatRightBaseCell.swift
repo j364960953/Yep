@@ -7,12 +7,20 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
 
 let sendingAnimationName = "RotationOnStateAnimation"
 
 class ChatRightBaseCell: ChatBaseCell {
     
-    @IBOutlet weak var dotImageView: UIImageView!
+    lazy var dotImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.frame = CGRect(x: 15, y: 0, width: 26, height: 26)
+        imageView.image = UIImage(named: "icon_dot_sending")
+        imageView.contentMode = .Center
+        return imageView
+    }()
     
     override var inGroup: Bool {
         willSet {
@@ -60,21 +68,22 @@ class ChatRightBaseCell: ChatBaseCell {
         }
     }
 
-
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
 
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "tryUpdateMessageState", name: MessageNotification.MessageStateChanged, object: nil)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        contentView.addSubview(dotImageView)
+
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ChatRightBaseCell.tryUpdateMessageState), name: YepConfig.Message.Notification.MessageStateChanged, object: nil)
     }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
-    
+
     func tryUpdateMessageState() {
 
         guard !inGroup else {
@@ -99,7 +108,6 @@ class ChatRightBaseCell: ChatBaseCell {
         dispatch_async(dispatch_get_main_queue()) { [weak self] in
             self?.dotImageView.layer.addAnimation(animation, forKey: sendingAnimationName)
         }
-
     }
 
     func removeSendingAnimation() {

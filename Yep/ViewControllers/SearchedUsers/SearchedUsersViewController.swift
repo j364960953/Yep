@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import YepNetworking
+import YepKit
+import YepConfig
 
-class SearchedUsersViewController: BaseViewController {
+final class SearchedUsersViewController: BaseViewController {
 
     var searchText = "NIX"
 
@@ -42,7 +45,7 @@ class SearchedUsersViewController: BaseViewController {
         activityIndicator.startAnimating()
 
         searchUsersByQ(searchText, failureHandler: { [weak self] reason, errorMessage in
-            defaultFailureHandler(reason, errorMessage: errorMessage)
+            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
             dispatch_async(dispatch_get_main_queue()) {
                 self?.activityIndicator.stopAnimating()
@@ -98,7 +101,7 @@ extension SearchedUsersViewController: UITableViewDataSource, UITableViewDelegat
 
         let discoveredUser = searchedUsers[indexPath.row]
 
-        cell.configureWithDiscoveredUser(discoveredUser, tableView: tableView, indexPath: indexPath)
+        cell.configureWithDiscoveredUser(discoveredUser)
 
         return cell
     }

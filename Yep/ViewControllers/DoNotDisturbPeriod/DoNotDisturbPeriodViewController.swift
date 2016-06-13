@@ -8,8 +8,10 @@
 
 import UIKit
 import RealmSwift
+import YepKit
+import YepNetworking
 
-class DoNotDisturbPeriodViewController: UIViewController {
+final class DoNotDisturbPeriodViewController: UIViewController {
 
     var doNotDisturbPeriod = DoNotDisturbPeriod()
 
@@ -78,7 +80,7 @@ class DoNotDisturbPeriodViewController: UIViewController {
         ]
 
         updateMyselfWithInfo(info, failureHandler: { [weak self] (reason, errorMessage) in
-            defaultFailureHandler(reason, errorMessage: errorMessage)
+            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
             YepAlert.alertSorry(message: NSLocalizedString("Set Do Not Disturb failed!", comment: ""), inViewController: self)
 

@@ -9,7 +9,7 @@
 import UIKit
 import AVFoundation
 
-class CameraPreviewView: UIView {
+final class CameraPreviewView: UIView {
 
     var session: AVCaptureSession? {
         get {
@@ -30,3 +30,4 @@ class CameraPreviewView: UIView {
         (self.layer as! AVCaptureVideoPreviewLayer).videoGravity = AVLayerVideoGravityResizeAspectFill
     }
 }
+

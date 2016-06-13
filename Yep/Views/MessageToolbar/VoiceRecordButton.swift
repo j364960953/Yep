@@ -8,7 +8,7 @@
 
 import UIKit
 
-class VoiceRecordButton: UIView {
+final class VoiceRecordButton: UIView {
     
     var touchesBegin: (() -> Void)?
     
@@ -126,7 +126,7 @@ class VoiceRecordButton: UIView {
         self.addSubview(rightVoiceImageView)
         rightVoiceImageView.translatesAutoresizingMaskIntoConstraints = false
 
-        let viewsDictionary = [
+        let viewsDictionary: [String: AnyObject] = [
             "leftVoiceImageView": leftVoiceImageView,
             "titleLabel": titleLabel,
             "rightVoiceImageView": rightVoiceImageView,
@@ -139,5 +139,5 @@ class VoiceRecordButton: UIView {
         NSLayoutConstraint.activateConstraints([leftVoiceImageViewConstraintCenterY])
         NSLayoutConstraint.activateConstraints(constraintsH)
     }
-
 }
+

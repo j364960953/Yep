@@ -9,7 +9,7 @@
 import UIKit
 
 @IBDesignable
-class UnderLineTextField: UITextField {
+final class UnderLineTextField: UITextField {
 
     @IBInspectable var underLineColor: UIColor = UIColor.yepTintColor()
     @IBInspectable var underLineWidth: CGFloat = 1
@@ -21,7 +21,7 @@ class UnderLineTextField: UITextField {
         layer.lineWidth = self.underLineWidth
         layer.strokeColor = self.underLineColor.CGColor
         return layer
-        }()
+    }()
 
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
@@ -48,5 +48,5 @@ class UnderLineTextField: UITextField {
     override func editingRectForBounds(bounds: CGRect) -> CGRect {
         return textRectForBounds(bounds)
     }
-
 }
+

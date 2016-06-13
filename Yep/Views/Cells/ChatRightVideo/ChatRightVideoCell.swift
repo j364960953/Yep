@@ -7,13 +7,27 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
 
-class ChatRightVideoCell: ChatRightBaseCell {
+final class ChatRightVideoCell: ChatRightBaseCell {
 
-    @IBOutlet weak var thumbnailImageView: UIImageView!
-    @IBOutlet weak var borderImageView: UIImageView!
+    lazy var thumbnailImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .ScaleAspectFill
+        imageView.tintColor = UIColor.rightBubbleTintColor()
+        return imageView
+    }()
 
-    @IBOutlet weak var playImageView: UIImageView!
+    lazy var borderImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "right_tail_image_bubble_border"))
+        return imageView
+    }()
+
+    lazy var playImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "icon_playvideo"))
+        return imageView
+    }()
 
     typealias MediaTapAction = () -> Void
     var mediaTapAction: MediaTapAction?
@@ -27,22 +41,28 @@ class ChatRightVideoCell: ChatRightBaseCell {
         avatarImageView.center = CGPoint(x: fullWidth - halfAvatarSize - YepConfig.chatCellGapBetweenWallAndAvatar(), y: halfAvatarSize)
     }
 
-    override func awakeFromNib() {
-        super.awakeFromNib()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        contentView.addSubview(thumbnailImageView)
+        contentView.addSubview(borderImageView)
+        contentView.addSubview(playImageView)
 
         UIView.performWithoutAnimation { [weak self] in
             self?.makeUI()
         }
 
-        thumbnailImageView.tintColor = UIColor.rightBubbleTintColor()
-
         thumbnailImageView.userInteractionEnabled = true
-        let tap = UITapGestureRecognizer(target: self, action: "tapMediaView")
+        let tap = UITapGestureRecognizer(target: self, action: #selector(ChatRightVideoCell.tapMediaView))
         thumbnailImageView.addGestureRecognizer(tap)
 
         prepareForMenuAction = { otherGesturesEnabled in
             tap.enabled = otherGesturesEnabled
         }
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     func tapMediaView() {
@@ -61,15 +81,12 @@ class ChatRightVideoCell: ChatRightBaseCell {
 
             if let image = image {
 
-                dispatch_async(dispatch_get_main_queue()) {
+                self.thumbnailImageView.image = image
 
-                    self.thumbnailImageView.image = image
-
-                    UIView.animateWithDuration(YepConfig.ChatCell.imageAppearDuration, delay: 0.0, options: .CurveEaseInOut, animations: { () -> Void in
-                        self.thumbnailImageView.alpha = 1.0
-                    }, completion: { (finished) -> Void in
-                    })
-                }
+                UIView.animateWithDuration(YepConfig.ChatCell.imageAppearDuration, delay: 0.0, options: .CurveEaseInOut, animations: { () -> Void in
+                    self.thumbnailImageView.alpha = 1.0
+                }, completion: { (finished) -> Void in
+                })
             }
         }
     }
@@ -86,7 +103,7 @@ class ChatRightVideoCell: ChatRightBaseCell {
         }
 
         if let sender = message.fromFriend {
-            let userAvatar = UserAvatar(userID: sender.userID, avatarStyle: nanoAvatarStyle)
+            let userAvatar = UserAvatar(userID: sender.userID, avatarURLString: sender.avatarURLString, avatarStyle: nanoAvatarStyle)
             avatarImageView.navi_setAvatar(userAvatar, withFadeTransitionDuration: avatarFadeTransitionDuration)
         }
 
@@ -116,12 +133,11 @@ class ChatRightVideoCell: ChatRightBaseCell {
                     }
                 }
 
-                ImageCache.sharedInstance.imageOfMessage(message, withSize: CGSize(width: messageImagePreferredWidth, height: ceil(messageImagePreferredWidth / aspectRatio)), tailDirection: .Right, completion: { [weak self] progress, image in
+                let size = CGSize(width: messageImagePreferredWidth, height: ceil(messageImagePreferredWidth / aspectRatio))
 
-                    dispatch_async(dispatch_get_main_queue()) {
-                        if let _ = collectionView.cellForItemAtIndexPath(indexPath) {
-                            self?.loadingWithProgress(progress, image: image)
-                        }
+                thumbnailImageView.yep_setImageOfMessage(message, withSize: size, tailDirection: .Right, completion: { loadingProgress, image in
+                    dispatch_async(dispatch_get_main_queue()) { [weak self] in
+                        self?.loadingWithProgress(loadingProgress, image: image)
                     }
                 })
 
@@ -139,12 +155,11 @@ class ChatRightVideoCell: ChatRightBaseCell {
                     }
                 }
 
-                ImageCache.sharedInstance.imageOfMessage(message, withSize: CGSize(width: messageImagePreferredHeight * aspectRatio, height: messageImagePreferredHeight), tailDirection: .Right, completion: { [weak self] progress, image in
+                let size = CGSize(width: messageImagePreferredHeight * aspectRatio, height: messageImagePreferredHeight)
 
-                    dispatch_async(dispatch_get_main_queue()) {
-                        if let _ = collectionView.cellForItemAtIndexPath(indexPath) {
-                            self?.loadingWithProgress(progress, image: image)
-                        }
+                thumbnailImageView.yep_setImageOfMessage(message, withSize: size, tailDirection: .Right, completion: { loadingProgress, image in
+                    dispatch_async(dispatch_get_main_queue()) { [weak self] in
+                        self?.loadingWithProgress(loadingProgress, image: image)
                     }
                 })
             }
@@ -163,12 +178,11 @@ class ChatRightVideoCell: ChatRightBaseCell {
                 }
             }
 
-            ImageCache.sharedInstance.imageOfMessage(message, withSize: CGSize(width: messageImagePreferredWidth, height: ceil(messageImagePreferredWidth / messageImagePreferredAspectRatio)), tailDirection: .Right, completion: { [weak self] progress, image in
+            let size = CGSize(width: messageImagePreferredWidth, height: ceil(messageImagePreferredWidth / messageImagePreferredAspectRatio))
 
-                dispatch_async(dispatch_get_main_queue()) {
-                    if let _ = collectionView.cellForItemAtIndexPath(indexPath) {
-                        self?.loadingWithProgress(progress, image: image)
-                    }
+            thumbnailImageView.yep_setImageOfMessage(message, withSize: size, tailDirection: .Right, completion: { loadingProgress, image in
+                dispatch_async(dispatch_get_main_queue()) { [weak self] in
+                    self?.loadingWithProgress(loadingProgress, image: image)
                 }
             })
         }

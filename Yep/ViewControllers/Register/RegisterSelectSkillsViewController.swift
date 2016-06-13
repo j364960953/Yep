@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import YepKit
+import YepNetworking
 import pop
 
-class RegisterSelectSkillsViewController: UIViewController {
+final class RegisterSelectSkillsViewController: UIViewController {
 
     var annotationText: String = ""
     var selectSkillAction: ((skill: Skill, selected: Bool) -> Bool)?
@@ -127,7 +129,7 @@ class RegisterSelectSkillsViewController: UIViewController {
         // 如果前一个 VC 来不及传递，这里还得再请求一次
         if skillCategories.isEmpty {
             allSkillCategories(failureHandler: { (reason, errorMessage) -> Void in
-                defaultFailureHandler(reason, errorMessage: errorMessage)
+                defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
             }, completion: { skillCategories in
                 self.skillCategories = skillCategories
@@ -182,7 +184,7 @@ extension RegisterSelectSkillsViewController: UICollectionViewDataSource, UIColl
                 
                 header.annotationLabel.text = annotationText
                 
-                let tap = UITapGestureRecognizer(target: self, action: "dismiss")
+                let tap = UITapGestureRecognizer(target: self, action: #selector(RegisterSelectSkillsViewController.dismiss))
                 header.annotationLabel.userInteractionEnabled = true
                 header.annotationLabel.addGestureRecognizer(tap)
                 

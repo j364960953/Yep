@@ -8,16 +8,16 @@
 
 import UIKit
 
-class YepNavigationController: UINavigationController, UIGestureRecognizerDelegate, UINavigationControllerDelegate {
+final class YepNavigationController: UINavigationController, UIGestureRecognizerDelegate, UINavigationControllerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if respondsToSelector("interactivePopGestureRecognizer") {
-            interactivePopGestureRecognizer?.delegate = self
-            
-            delegate = self
-        }
+        interactivePopGestureRecognizer?.delegate = self
+        
+        delegate = self
+
+//        self.navigationBar.changeBottomHairImage()
     }
 
     override init(rootViewController: UIViewController) {
@@ -29,7 +29,7 @@ class YepNavigationController: UINavigationController, UIGestureRecognizerDelega
     }
 
     override func pushViewController(viewController: UIViewController, animated: Bool) {
-        if respondsToSelector("interactivePopGestureRecognizer") && animated {
+        if animated {
             interactivePopGestureRecognizer?.enabled = false
         }
         
@@ -37,7 +37,7 @@ class YepNavigationController: UINavigationController, UIGestureRecognizerDelega
     }
     
     override func popToRootViewControllerAnimated(animated: Bool) -> [UIViewController]? {
-        if respondsToSelector("interactivePopGestureRecognizer") && animated {
+        if animated {
             interactivePopGestureRecognizer?.enabled = false
         }
         
@@ -45,7 +45,7 @@ class YepNavigationController: UINavigationController, UIGestureRecognizerDelega
     }
     
     override func popToViewController(viewController: UIViewController, animated: Bool) -> [UIViewController]? {
-        if respondsToSelector("interactivePopGestureRecognizer") && animated {
+        if animated {
             interactivePopGestureRecognizer?.enabled = false
         }
         
@@ -53,9 +53,7 @@ class YepNavigationController: UINavigationController, UIGestureRecognizerDelega
     }
     
     func navigationController(navigationController: UINavigationController, didShowViewController viewController: UIViewController, animated: Bool) {
-        if respondsToSelector("interactivePopGestureRecognizer") {
-            interactivePopGestureRecognizer?.enabled = true
-        }
+        interactivePopGestureRecognizer?.enabled = true
     }
     
     func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer) -> Bool {

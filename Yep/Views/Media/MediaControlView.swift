@@ -9,7 +9,7 @@
 import UIKit
 
 //@IBDesignable
-class MediaControlView: UIView {
+final class MediaControlView: UIView {
 
     enum Type {
         case Image
@@ -61,54 +61,34 @@ class MediaControlView: UIView {
     lazy var timeLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .Center
-        if #available(iOS 8.2, *) {
-            label.font = UIFont.systemFontOfSize(14, weight: UIFontWeightLight)
-        } else {
-            label.font = UIFont(name: "HelveticaNeue-Light", size: 14)!
-        }
+        label.font = UIFont.systemFontOfSize(14, weight: UIFontWeightLight)
         label.textColor = UIColor.whiteColor()
         label.text = "00:42"
         return label
-        }()
+    }()
 
     lazy var playButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "icon_play"), forState: .Normal)
         button.tintColor = UIColor.whiteColor()
         button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20)
-        button.addTarget(self, action: "playOrPause", forControlEvents: UIControlEvents.TouchUpInside)
+        button.addTarget(self, action: #selector(MediaControlView.playOrPause), forControlEvents: UIControlEvents.TouchUpInside)
         return button
-        }()
+    }()
 
     lazy var shareButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "icon_more"), forState: .Normal)
         button.tintColor = UIColor.whiteColor()
         button.contentEdgeInsets = UIEdgeInsets(top: 0, left: 30, bottom: 0, right: 30)
-        button.addTarget(self, action: "share", forControlEvents: UIControlEvents.TouchUpInside)
+        button.addTarget(self, action: #selector(MediaControlView.share), forControlEvents: UIControlEvents.TouchUpInside)
         return button
-        }()
-
-    /*
-    lazy var gradientLayer: CAGradientLayer = {
-        let layer = CAGradientLayer()
-        let startColor: UIColor = UIColor.clearColor()
-        let endColor: UIColor = UIColor.blackColor().colorWithAlphaComponent(0.5)
-        let colors = [startColor.CGColor, endColor.CGColor]
-        layer.colors = colors
-        layer.locations = [0.0, 1.0]
-
-        return layer
-        }()
-    */
+    }()
 
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
 
         backgroundColor = UIColor.clearColor()
-
-        //layer.addSublayer(gradientLayer)
-        //gradientLayer.frame = bounds
 
         makeUI()
     }
@@ -122,13 +102,13 @@ class MediaControlView: UIView {
         playButton.translatesAutoresizingMaskIntoConstraints = false
         shareButton.translatesAutoresizingMaskIntoConstraints = false
 
-        let viewsDictionary = [
+        let viewsDictionary: [String: AnyObject] = [
             "timeLable": timeLabel,
             "playButton": playButton,
             "shareButton": shareButton,
         ]
 
-        let constraintsV = NSLayoutConstraint.constraintsWithVisualFormat("V:|[timeLable]|", options: NSLayoutFormatOptions(rawValue: 0), metrics: nil, views: viewsDictionary)
+        let constraintsV = NSLayoutConstraint.constraintsWithVisualFormat("V:|[timeLable]|", options: [], metrics: nil, views: viewsDictionary)
 
         let constraintsH = NSLayoutConstraint.constraintsWithVisualFormat("H:|-30-[timeLable]-(>=0)-[playButton]-(>=0)-[shareButton]|", options: [.AlignAllCenterY, .AlignAllTop, .AlignAllBottom], metrics: nil, views: viewsDictionary)
 

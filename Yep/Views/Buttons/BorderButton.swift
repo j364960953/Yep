@@ -9,7 +9,7 @@
 import UIKit
 
 @IBDesignable
-class BorderButton: UIButton {
+final class BorderButton: UIButton {
 
     @IBInspectable var cornerRadius: CGFloat = 6
     @IBInspectable var borderColor: UIColor = UIColor.yepTintColor()
@@ -37,7 +37,7 @@ class BorderButton: UIButton {
     lazy var accessoryImageView: UIImageView = {
         let imageView = UIImageView(image: UIImage(named: "icon_accessory_mini"))
         return imageView
-        }()
+    }()
 
     override func didMoveToSuperview() {
         super.didMoveToSuperview()

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class YepButton: UIButton {
+final class YepButton: UIButton {
     
     var yepTouchBegin : (() -> ())?
     
@@ -49,5 +49,6 @@ class YepButton: UIButton {
             yepTouchesMoved()
         }
     }
-    
 }
+
+    

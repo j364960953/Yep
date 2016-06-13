@@ -7,8 +7,10 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
 
-class SettingsViewController: BaseViewController {
+final class SettingsViewController: BaseViewController {
 
     @IBOutlet private weak var settingsTableView: UITableView!
 
@@ -48,6 +50,11 @@ class SettingsViewController: BaseViewController {
         settingsTableView?.delegate = nil
 
         println("deinit Settings")
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        
+        super.viewWillAppear(animated)
     }
 
     override func viewDidLoad() {

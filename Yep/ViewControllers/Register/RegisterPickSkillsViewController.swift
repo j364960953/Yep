@@ -7,15 +7,17 @@
 //
 
 import UIKit
+import YepKit
+import YepNetworking
 
-class RegisterPickSkillsViewController: BaseViewController {
+final class RegisterPickSkillsViewController: BaseViewController {
 
     var isRegister = true
 
     var isDirty = false {
         didSet {
             if !isRegister {
-                let backBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Cancel, target: self, action: "cancel")
+                let backBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Cancel, target: self, action: #selector(RegisterPickSkillsViewController.cancel))
                 navigationItem.leftBarButtonItem = backBarButtonItem
             }
 
@@ -54,7 +56,7 @@ class RegisterPickSkillsViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let doneBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Done, target: self, action: "saveSkills:")
+        let doneBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.Done, target: self, action: #selector(RegisterPickSkillsViewController.saveSkills(_:)))
         navigationItem.rightBarButtonItem = doneBarButtonItem
         navigationItem.rightBarButtonItem?.enabled = false
 
@@ -73,7 +75,7 @@ class RegisterPickSkillsViewController: BaseViewController {
         skillsCollectionView.registerNib(UINib(nibName: skillAddCellIdentifier, bundle: nil), forCellWithReuseIdentifier: skillAddCellIdentifier)
 
         allSkillCategories(failureHandler: { (reason, errorMessage) -> Void in
-            defaultFailureHandler(reason, errorMessage: errorMessage)
+            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
             
         }, completion: { skillCategories -> Void in
             self.skillCategories = skillCategories
@@ -108,7 +110,7 @@ class RegisterPickSkillsViewController: BaseViewController {
             dispatch_group_enter(addSkillsGroup)
 
             addSkill(skill, toSkillSet: .Master, failureHandler: { (reason, errorMessage) in
-                defaultFailureHandler(reason, errorMessage: errorMessage)
+                defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                 saveSkillsErrorMessage = errorMessage
 
@@ -123,7 +125,7 @@ class RegisterPickSkillsViewController: BaseViewController {
             dispatch_group_enter(addSkillsGroup)
 
             addSkill(skill, toSkillSet: .Learning, failureHandler: { (reason, errorMessage) in
-                defaultFailureHandler(reason, errorMessage: errorMessage)
+                defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                 saveSkillsErrorMessage = errorMessage
 
@@ -333,7 +335,7 @@ extension RegisterPickSkillsViewController: UICollectionViewDataSource, UICollec
 
                     } else {
                         allSkillCategories(failureHandler: { (reason, errorMessage) -> Void in
-                            defaultFailureHandler(reason, errorMessage: errorMessage)
+                            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                         }, completion: { skillCategories -> Void in
                             self?.skillCategories = skillCategories
@@ -366,7 +368,7 @@ extension RegisterPickSkillsViewController: UICollectionViewDataSource, UICollec
 
                     } else {
                         allSkillCategories(failureHandler: { (reason, errorMessage) -> Void in
-                            defaultFailureHandler(reason, errorMessage: errorMessage)
+                            defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                         }, completion: { skillCategories -> Void in
                             self?.skillCategories = skillCategories

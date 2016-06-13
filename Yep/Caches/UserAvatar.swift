@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
 import RealmSwift
 import Navi
 
@@ -15,6 +17,7 @@ private let screenScale = UIScreen.mainScreen().scale
 struct UserAvatar {
 
     let userID: String
+    let avatarURLString: String
     let avatarStyle: AvatarStyle
 
     var user: User? {
@@ -30,12 +33,7 @@ struct UserAvatar {
 extension UserAvatar: Navi.Avatar {
 
     var URL: NSURL? {
-
-        if let avatarURLString = user?.avatarURLString {
-            return NSURL(string: avatarURLString)
-        }
-
-        return nil
+        return NSURL(string: avatarURLString)
     }
 
     var style: AvatarStyle {

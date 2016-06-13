@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9060" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="Ha4-ol-D2e">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15E65" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="Ha4-ol-D2e">
     <dependencies>
-        <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9051"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
     </dependencies>
     <scenes>
+        <!--SearchConversationsViewController-->
+        <scene sceneID="How-3a-2v9">
+            <objects>
+                <viewControllerPlaceholder storyboardName="SearchConversations" referencedIdentifier="SearchConversationsViewController" id="gGU-x0-lzR" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hvR-M8-drV" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="48.5" y="-1599"/>
+        </scene>
         <!--FeedConversationsViewController-->
         <scene sceneID="IRz-xo-nL8">
             <objects>
@@ -35,7 +42,6 @@
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="ECY-qd-LcH" userLabel="Conversations Table View">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <color key="separatorColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.95686274509803926" alpha="1" colorSpace="calibratedRGB"/>
                                 <inset key="separatorInset" minX="90" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -45,7 +51,6 @@
                                 </connections>
                             </tableView>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="ECY-qd-LcH" secondAttribute="trailing" id="0jB-Xu-lQd"/>
@@ -59,6 +64,8 @@
                         <outlet property="conversationsTableView" destination="ECY-qd-LcH" id="UNW-oM-y6R"/>
                         <segue destination="4LZ-EL-DIC" kind="show" identifier="showFeedConversations" id="k6i-To-sje"/>
                         <segue destination="QZL-WJ-zdV" kind="show" identifier="showConversation" id="I5f-gX-4nB"/>
+                        <segue destination="UCf-rZ-VVt" kind="show" identifier="showProfile" id="RDj-or-85C"/>
+                        <segue destination="gGU-x0-lzR" kind="show" identifier="showSearchConversations" id="6UI-vw-uYp"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="x5A-6p-PRh" sceneMemberID="firstResponder"/>
@@ -79,7 +86,6 @@
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="3hF-wd-yhY" userLabel="Contacts Table View">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <color key="separatorColor" red="0.93725490196078431" green="0.93725490196078431" blue="0.95686274509803926" alpha="1" colorSpace="calibratedRGB"/>
                                 <inset key="separatorInset" minX="90" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -90,14 +96,12 @@
                             </tableView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="G4u-1I-leN">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="20"/>
-                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="20" id="nQx-4t-rE1"/>
                                 </constraints>
                             </view>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="G4u-1I-leN" secondAttribute="trailing" id="855-j7-2GG"/>
@@ -121,6 +125,8 @@
                         <outlet property="coverUnderStatusBarView" destination="G4u-1I-leN" id="mZf-ea-d2Y"/>
                         <segue destination="AZ0-Fw-rwa" kind="show" identifier="showAddFriends" id="sGo-49-lo9"/>
                         <segue destination="ud8-be-cUH" kind="show" identifier="showProfile" id="26L-0k-ELo"/>
+                        <segue destination="UVq-MX-Pso" kind="show" identifier="showSearchContacts" id="cFN-sJ-mbQ"/>
+                        <segue destination="sMY-yq-ctJ" kind="show" identifier="showConversation" id="jcS-l3-8ES"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ynX-sO-VM0" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -139,9 +145,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="qiv-cC-3J3">
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="qiv-cC-3J3" customClass="DiscoverCollectionView" customModule="Yep" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <animations/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="sWq-uv-kTu">
                                     <size key="itemSize" width="50" height="50"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
@@ -152,10 +157,8 @@
                             </collectionView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="zzD-ES-eHf">
                                 <rect key="frame" x="290" y="184" width="20" height="20"/>
-                                <animations/>
                             </activityIndicatorView>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="qiv-cC-3J3" firstAttribute="top" secondItem="y3q-lk-c8x" secondAttribute="bottom" constant="-64" id="7Dp-9c-rpA"/>
@@ -191,6 +194,14 @@
             <point key="canvasLocation" x="-559" y="1077"/>
         </scene>
         <!--ProfileViewController-->
+        <scene sceneID="UKd-3u-mzY">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="ProfileViewController" id="UCf-rZ-VVt" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UN6-Pd-Kne" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4" y="-1357"/>
+        </scene>
+        <!--ProfileViewController-->
         <scene sceneID="8yj-GZ-bVh">
             <objects>
                 <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="ProfileViewController" id="J6W-3w-f5X" sceneMemberID="viewController"/>
@@ -212,7 +223,6 @@
                         <subviews>
                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="VZO-hp-fyU" userLabel="Profile Collection View">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="WvZ-fD-rR0" customClass="ProfileLayout" customModule="Yep" customModuleProvider="target">
                                     <size key="itemSize" width="141" height="116"/>
@@ -228,7 +238,6 @@
                             </collectionView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sfC-fv-gcr" userLabel="Say Hi View" customClass="BottomButtonView" customModule="Yep" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="550" width="600" height="50"/>
-                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="50" id="be0-Cf-Dol"/>
@@ -236,13 +245,11 @@
                             </view>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="top_shadow" translatesAutoresizingMaskIntoConstraints="NO" id="fut-Ug-l4V" userLabel="Shadow Image View">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="80"/>
-                                <animations/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="80" id="l36-59-jyr"/>
                                 </constraints>
                             </imageView>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="sfC-fv-gcr" secondAttribute="bottom" id="0KI-ei-eq8"/>
@@ -282,6 +289,22 @@
             </objects>
             <point key="canvasLocation" x="-559" y="1901"/>
         </scene>
+        <!--SearchContactsViewController-->
+        <scene sceneID="qZ3-ft-tqL">
+            <objects>
+                <viewControllerPlaceholder storyboardName="SearchContacts" referencedIdentifier="SearchContactsViewController" id="UVq-MX-Pso" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Xfl-kr-yeJ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-15.5" y="-436"/>
+        </scene>
+        <!--ConversationViewController-->
+        <scene sceneID="YLm-rK-WGS">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Conversation" referencedIdentifier="ConversationViewController" id="sMY-yq-ctJ" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hWf-Hh-dqR" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-22.5" y="-356"/>
+        </scene>
         <!--AddFriendsViewController-->
         <scene sceneID="xpw-2j-6I8">
             <objects>
@@ -306,7 +329,6 @@
                     <nil key="simulatedBottomBarMetrics"/>
                     <tabBar key="tabBar" contentMode="scaleToFill" id="DdC-xv-l7V">
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </tabBar>
                     <connections>
@@ -335,7 +357,6 @@
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="D86-dp-qKQ">
                                 <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
-                                <animations/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <connections>
                                     <outlet property="dataSource" destination="W3w-jm-aNI" id="Ld3-tu-vGC"/>
@@ -344,10 +365,8 @@
                             </tableView>
                             <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="sHk-eY-6TD">
                                 <rect key="frame" x="290" y="184" width="20" height="20"/>
-                                <animations/>
                             </activityIndicatorView>
                         </subviews>
-                        <animations/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="D86-dp-qKQ" secondAttribute="trailing" id="0cJ-BC-Zme"/>
@@ -370,12 +389,12 @@
                         <outlet property="feedsTableView" destination="D86-dp-qKQ" id="rh9-wh-IqK"/>
                         <segue destination="h8b-7V-qPb" kind="show" identifier="showFeedsWithSkill" id="D1j-0N-VMH"/>
                         <segue destination="dYX-Ms-gWP" kind="show" identifier="showSkillHome" id="TTj-EA-7SS"/>
-                        <segue destination="IEG-17-cLh" kind="show" identifier="showFeedMedia" id="DsA-Jb-0sJ"/>
                         <segue destination="iL2-os-eZV" kind="show" identifier="showConversation" id="tg0-ny-kGT"/>
                         <segue destination="oUx-zd-faH" kind="show" identifier="showProfile" id="Gdt-20-g91"/>
                         <segue destination="4oS-hQ-vpS" kind="presentation" identifier="presentNewFeed" id="4uC-Sk-gjF"/>
                         <segue destination="9n0-n0-AJg" kind="presentation" identifier="presentNewFeedVoiceRecord" id="xzo-eI-lqm"/>
                         <segue destination="eU6-TF-LII" kind="presentation" identifier="presentPickLocation" id="bvu-Rs-ARw"/>
+                        <segue destination="BTb-Zg-CnT" kind="show" identifier="showSearchFeeds" id="oMF-br-ZET"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="ETW-Em-Kw5" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -406,21 +425,13 @@
             </objects>
             <point key="canvasLocation" x="-296" y="638"/>
         </scene>
-        <!--MessageMediaViewController-->
-        <scene sceneID="DvE-gL-l6T">
-            <objects>
-                <viewControllerPlaceholder storyboardName="MessageMedia" referencedIdentifier="MessageMediaViewController" id="IEG-17-cLh" sceneMemberID="viewController"/>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="ja9-fT-ObV" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="87" y="299"/>
-        </scene>
         <!--ConversationViewController-->
         <scene sceneID="pz7-gU-UIN">
             <objects>
                 <viewControllerPlaceholder storyboardName="Conversation" referencedIdentifier="ConversationViewController" id="iL2-os-eZV" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dvB-x7-LnM" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="69.5" y="385"/>
+            <point key="canvasLocation" x="69" y="237"/>
         </scene>
         <!--ProfileViewController-->
         <scene sceneID="P4W-XO-vZA">
@@ -428,7 +439,15 @@
                 <viewControllerPlaceholder storyboardName="Main" referencedIdentifier="ProfileViewController" id="oUx-zd-faH" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lm7-rC-mZS" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="35" y="473"/>
+            <point key="canvasLocation" x="48" y="318"/>
+        </scene>
+        <!--SearchFeedsViewController-->
+        <scene sceneID="vac-Ta-f1y">
+            <objects>
+                <viewControllerPlaceholder storyboardName="SearchFeeds" referencedIdentifier="SearchFeedsViewController" id="BTb-Zg-CnT" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="LiJ-SY-7S0" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="32" y="413"/>
         </scene>
         <!--SkillHomeViewController-->
         <scene sceneID="mll-N9-alH">
@@ -459,7 +478,6 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="rBt-UI-PaQ">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
@@ -483,11 +501,10 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="F2p-n3-YGV">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
-                        <segue destination="fFS-0m-aok" kind="relationship" relationship="rootViewController" id="3Dc-Qq-4vY"/>
+                        <segue destination="fFS-0m-aok" kind="relationship" relationship="rootViewController" id="7Yg-OV-MON"/>
                     </connections>
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RoZ-xx-fki" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -507,7 +524,6 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="udE-Dh-c2s">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
@@ -521,7 +537,7 @@
         <!--Profile-->
         <scene sceneID="E1Z-RL-QZO">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="dwP-GL-7hj" customClass="YepNavigationController" customModule="Yep" customModuleProvider="target" sceneMemberID="viewController">
+                <navigationController storyboardIdentifier="ProfileNavigationViewController" automaticallyAdjustsScrollViewInsets="NO" id="dwP-GL-7hj" customClass="YepNavigationController" customModule="Yep" customModuleProvider="target" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="Profile" image="icon_me" id="zZf-BL-xLF">
                         <userDefinedRuntimeAttributes>
                             <userDefinedRuntimeAttribute type="image" keyPath="selectedImage" value="icon_me_active"/>
@@ -531,7 +547,6 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="m4n-ca-AbO">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>
@@ -623,7 +638,6 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="6uo-JX-xvr">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <animations/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <connections>

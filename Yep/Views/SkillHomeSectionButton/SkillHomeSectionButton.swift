@@ -11,7 +11,7 @@ import pop
 
 let skillHeomSectionButtonLineHeight: CGFloat = 2
 
-class SkillHomeSectionButton: UIButton {
+final class SkillHomeSectionButton: UIButton {
     
     let highLight = CALayer()
     
@@ -56,7 +56,6 @@ class SkillHomeSectionButton: UIButton {
     func updateHightLightBounce() {
         highLight.frame =  CGRectMake(0, self.frame.size.height - skillHeomSectionButtonLineHeight, self.frame.size.width, skillHeomSectionButtonLineHeight)
     }
-    
 }
 
 

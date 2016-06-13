@@ -7,10 +7,13 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
+import YepNetworking
 import MonkeyKing
 import Navi
 
-class SocialWorkGithubViewController: BaseViewController {
+final class SocialWorkGithubViewController: BaseViewController {
 
     var socialAccount: SocialAccount?
     var profileUser: ProfileUser?
@@ -18,9 +21,8 @@ class SocialWorkGithubViewController: BaseViewController {
 
     var afterGetGithubWork: (GithubWork -> Void)?
 
-
     private lazy var shareButton: UIBarButtonItem = {
-        let button = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "share:")
+        let button = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: #selector(SocialWorkGithubViewController.share(_:)))
         return button
     }()
 
@@ -65,10 +67,15 @@ class SocialWorkGithubViewController: BaseViewController {
             updateGithubTableView()
         }
     }
+    
+    override func viewWillAppear(animated: Bool) {
+        
+        super.viewWillAppear(animated)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
 //        animatedOnNavigationBar = false
 
         if let socialAccount = socialAccount {
@@ -121,7 +128,7 @@ class SocialWorkGithubViewController: BaseViewController {
             if let userID = userID {
 
                 githubWorkOfUserWithUserID(userID, failureHandler: { [weak self] (reason, errorMessage) -> Void in
-                    defaultFailureHandler(reason, errorMessage: errorMessage)
+                    defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                     YepAlert.alertSorry(message: NSLocalizedString("Yep can't reach GitHub.\nWe blame GFW!", comment: ""), inViewController: self)
 
@@ -194,7 +201,7 @@ class SocialWorkGithubViewController: BaseViewController {
             )
 
             let activityViewController = UIActivityViewController(activityItems: [githubURL], applicationActivities: [weChatSessionActivity, weChatTimelineActivity])
-
+            activityViewController.excludedActivityTypes = [UIActivityTypeMessage, UIActivityTypeMail]
             presentViewController(activityViewController, animated: true, completion: nil)
         }
     }

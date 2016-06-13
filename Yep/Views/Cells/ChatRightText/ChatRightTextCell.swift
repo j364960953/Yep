@@ -7,15 +7,57 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
 
 class ChatRightTextCell: ChatRightBaseCell {
 
-    @IBOutlet weak var bubbleTailImageView: UIImageView!
-    
-    var bubbleBodyShapeLayer: CAShapeLayer!
+    var tapUsernameAction: ((username: String) -> Void)?
+    var tapFeedAction: ((feed: DiscoveredFeed) -> Void)?
 
-    @IBOutlet weak var textContainerView: UIView!
-    @IBOutlet weak var textContentTextView: ChatTextView!
+    lazy var bubbleTailImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "bubble_right_tail"))
+        imageView.tintColor = UIColor.rightBubbleTintColor()
+        return imageView
+    }()
+
+    lazy var bubbleBodyShapeLayer: CAShapeLayer = {
+        let layer = CAShapeLayer()
+        layer.backgroundColor = UIColor.rightBubbleTintColor().CGColor
+        layer.fillColor = UIColor.rightBubbleTintColor().CGColor
+        return layer
+    }()
+
+    lazy var textContainerView: UIView = {
+        let view = UIView()
+        return view
+    }()
+
+    lazy var textContentTextView: ChatTextView = {
+        let view = ChatTextView()
+
+        view.textContainer.lineFragmentPadding = 0
+        view.font = UIFont.chatTextFont()
+        view.backgroundColor = UIColor.clearColor()
+        view.textColor = UIColor.whiteColor()
+        view.tintColor = UIColor.whiteColor()
+        view.linkTextAttributes = [
+            NSForegroundColorAttributeName: UIColor.whiteColor(),
+            NSUnderlineStyleAttributeName: NSNumber(integer: NSUnderlineStyle.StyleSingle.rawValue),
+        ]
+
+        view.tapMentionAction = { [weak self] username in
+            self?.tapUsernameAction?(username: username)
+        }
+
+        view.tapFeedAction = { [weak self] feed in
+            self?.tapFeedAction?(feed: feed)
+        }
+
+        return view
+    }()
+
+    var bottomGap: CGFloat = 0
 
     typealias MediaTapAction = () -> Void
     var mediaTapAction: MediaTapAction?
@@ -29,41 +71,32 @@ class ChatRightTextCell: ChatRightBaseCell {
         avatarImageView.center = CGPoint(x: fullWidth - halfAvatarSize - YepConfig.chatCellGapBetweenWallAndAvatar(), y: halfAvatarSize)
     }
 
-    override func awakeFromNib() {
-        super.awakeFromNib()
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+
+        contentView.addSubview(bubbleTailImageView)
+        contentView.addSubview(textContainerView)
+        textContainerView.addSubview(textContentTextView)
+
+        if let bubblePosition = layer.sublayers {
+            contentView.layer.insertSublayer(bubbleBodyShapeLayer, atIndex: UInt32(bubblePosition.count))
+        }
 
         UIView.performWithoutAnimation { [weak self] in
             self?.makeUI()
         }
-        
-        bubbleBodyShapeLayer = CAShapeLayer()
-        bubbleBodyShapeLayer.backgroundColor = UIColor.rightBubbleTintColor().CGColor
-        bubbleBodyShapeLayer.fillColor = UIColor.rightBubbleTintColor().CGColor
-
-        textContentTextView.textContainer.lineFragmentPadding = 0
-        textContentTextView.font = UIFont.chatTextFont()
-        
-        textContentTextView.backgroundColor = UIColor.clearColor()
-        textContentTextView.textColor = UIColor.whiteColor()
-        textContentTextView.tintColor = UIColor.whiteColor()
-        textContentTextView.linkTextAttributes = [
-            NSForegroundColorAttributeName: UIColor.whiteColor(),
-            NSUnderlineStyleAttributeName: NSNumber(integer: NSUnderlineStyle.StyleSingle.rawValue),
-        ]
 
         textContainerView.userInteractionEnabled = true
-        let tap = UITapGestureRecognizer(target: self, action: "tapMediaView")
+        let tap = UITapGestureRecognizer(target: self, action: #selector(ChatRightTextCell.tapMediaView))
         textContainerView.addGestureRecognizer(tap)
 
         prepareForMenuAction = { otherGesturesEnabled in
             tap.enabled = otherGesturesEnabled
         }
+    }
 
-        bubbleTailImageView.tintColor = UIColor.rightBubbleTintColor()
-        
-        if let bubblePosition = layer.sublayers {
-            contentView.layer.insertSublayer(bubbleBodyShapeLayer, atIndex: UInt32(bubblePosition.count))
-        }
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     func tapMediaView() {
@@ -109,7 +142,9 @@ class ChatRightTextCell: ChatRightBaseCell {
 
                 strongSelf.makeUI()
                 
-                strongSelf.textContainerView.frame = CGRect(x: CGRectGetMinX(strongSelf.avatarImageView.frame) - YepConfig.chatCellGapBetweenTextContentLabelAndAvatar() - textContentLabelWidth, y: 3, width: textContentLabelWidth, height: strongSelf.bounds.height - 3 * 2)
+                strongSelf.textContainerView.frame = CGRect(x: CGRectGetMinX(strongSelf.avatarImageView.frame) - YepConfig.chatCellGapBetweenTextContentLabelAndAvatar() - textContentLabelWidth, y: 3, width: textContentLabelWidth, height: strongSelf.bounds.height - 3 * 2 - strongSelf.bottomGap)
+
+                strongSelf.textContentTextView.frame = strongSelf.textContainerView.bounds
                 
                 let bubbleBodyFrame = CGRectInset(strongSelf.textContainerView.frame, -12, -3)
                 
@@ -122,7 +157,7 @@ class ChatRightTextCell: ChatRightBaseCell {
         }
 
         if let sender = message.fromFriend {
-            let userAvatar = UserAvatar(userID: sender.userID, avatarStyle: nanoAvatarStyle)
+            let userAvatar = UserAvatar(userID: sender.userID, avatarURLString: sender.avatarURLString, avatarStyle: nanoAvatarStyle)
             avatarImageView.navi_setAvatar(userAvatar, withFadeTransitionDuration: avatarFadeTransitionDuration)
         }
     }

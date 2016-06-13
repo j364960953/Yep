@@ -7,8 +7,11 @@
 //
 
 import UIKit
+import YepKit
+import YepConfig
+import YepNetworking
 
-class ProfileSocialAccountGithubCell: UICollectionViewCell {
+final class ProfileSocialAccountGithubCell: UICollectionViewCell {
 
     var githubWork: GithubWork? {
         didSet {
@@ -117,7 +120,7 @@ class ProfileSocialAccountGithubCell: UICollectionViewCell {
                 if let userID = userID {
 
                     githubWorkOfUserWithUserID(userID, failureHandler: { (reason, errorMessage) -> Void in
-                        defaultFailureHandler(reason, errorMessage: errorMessage)
+                        defaultFailureHandler(reason: reason, errorMessage: errorMessage)
 
                     }, completion: { githubWork in
                         //println("githubWork: \(githubWork)")
